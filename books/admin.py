@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.db.models import Count
 from django.forms import ValidationError
+from django.urls import reverse
+from django.utils.html import format_html
 
 from .models import Author, Book, Edition, Genre, Prize, Reading, ReadingLog, Series
 
@@ -17,7 +19,7 @@ class BookAdmin(admin.ModelAdmin):
         "prize",
         "genres",
         "series",
-        "series_order"
+        "series_order",
     )
     list_display = (
         "name",
@@ -107,7 +109,17 @@ class ReadingLogAdmin(admin.ModelAdmin):
 @admin.register(Series)
 class SeriesAdmin(admin.ModelAdmin):
     list_display = ("title", "author", "get_number_of_volumes")
-    list_fields = ("title", "author")
+    list_fields = ("title", "author", "books_in_this_series")
+    readonly_fields = ["books_in_this_series"]
+
+    def books_in_this_series(self, obj):
+        number_of_volumes = obj.book_count
+        url = reverse("admin:books_book_changelist") + f"?series__id__exact={obj.id}"
+        return format_html(
+            '<a href="{}">View {} books in this series</a>', url, number_of_volumes
+        )
+
+    books_in_this_series.short_description = "Books in this series"
 
     # Show the number of books in each series
     @admin.display(description="volumes")

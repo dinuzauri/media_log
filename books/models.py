@@ -68,7 +68,7 @@ class Edition(models.Model):
     isbn = models.CharField(max_length=14, null=True)
 
     def __str__(self):
-        return f"{self.title.name} - {self.format_display()}"
+        return f"{self.title.name} - {self.FORMATS.get(self.format)}"
 
 
 class Reading(models.Model):
