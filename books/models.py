@@ -11,13 +11,12 @@ class Author(models.Model):
         return self.name
 
 
-class Prize(models.Model):
+class Award(models.Model):
     name = models.CharField(max_length=50)
-    about = models.CharField(max_length=100)
+    about = models.CharField(max_length=400)
 
     def __str__(self):
         return self.name
-
 
 class Genre(models.Model):
     name = models.CharField(max_length=20)
@@ -33,11 +32,13 @@ class Series(models.Model):
     def __str__(self):
         return f"{self.title} by {self.author}"
 
+    class Meta:
+        verbose_name_plural= "Series"
 
 class Book(models.Model):
     name = models.CharField(max_length=50)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    prize = models.ManyToManyField(Prize, blank=True)
+    awards = models.ManyToManyField(Award, blank=True, through="BookAward")
     publish_year = models.IntegerField(null=True)
     language = models.CharField(max_length=20, null=True)
     genres = models.ManyToManyField(Genre, blank=True)
@@ -56,6 +57,18 @@ class Book(models.Model):
 
     def __str__(self):
         return self.name
+
+class BookAward(models.Model):
+    STATUS_CHOICES={"W":"won","S":"shortlisted"}
+    book=models.ForeignKey(Book, on_delete=models.CASCADE)
+    prize=models.ForeignKey(Award,on_delete=models.CASCADE)
+    year=models.IntegerField()
+    status=models.CharField(max_length=1,choices=STATUS_CHOICES)
+    class Meta:
+        unique_together=("book","prize","year")
+        verbose_name_plural= "Book Awards"
+    def __str__(self):
+        return f"{self.prize.name}({self.year}): {self.book.name}"
 
 
 class Edition(models.Model):

@@ -4,7 +4,37 @@ from django.forms import ValidationError
 from django.urls import reverse
 from django.utils.html import format_html
 
-from .models import Author, Book, Edition, Genre, Prize, Reading, ReadingLog, Series
+from .models import (
+    Author,
+    Book,
+    Edition,
+    Genre,
+    Award,
+    Reading,
+    ReadingLog,
+    Series,
+    BookAward,
+)
+
+
+class BookAwardInline(admin.TabularInline):
+    model = BookAward
+    extra = 0
+    fields = ["year", "book", "status"]
+    ordering = ["-year"]
+
+
+class BookInlineForSeries(admin.TabularInline):
+    model = Book
+    fields = ["series_order", "name", "author", "publish_year", "page_count"]
+    extra = 0
+    ordering = ["series_order"]
+
+class BookInlineForAuthor(admin.TabularInline):
+    model = Book
+    fields = ["name",  "publish_year", "series", "page_count"]
+    extra = 0
+    ordering = ["-publish_year"]
 
 
 @admin.register(Book)
@@ -16,7 +46,6 @@ class BookAdmin(admin.ModelAdmin):
         "language",
         "page_count",
         "publish_year",
-        "prize",
         "genres",
         "series",
         "series_order",
@@ -27,13 +56,9 @@ class BookAdmin(admin.ModelAdmin):
         "language",
         "publish_year",
         "page_count",
-        "display_prizes",
     )
-    autocomplete_fields = ("prize", "genres")
-
-    @admin.display(description="Prizes")
-    def display_prizes(self, obj):
-        return ", ".join([prize.name for prize in obj.prize.all()])
+    inlines = [BookAwardInline]
+    autocomplete_fields = ["genres"]
 
 
 @admin.register(Author)
@@ -41,11 +66,11 @@ class AuthorAdmin(admin.ModelAdmin):
     model = Author
     fields = ("name", "country", "nobel")
     list_display = ("name", "country", "nobel")
+    inlines=[BookInlineForAuthor]
 
 
 @admin.register(Edition)
 class EditionAdmin(admin.ModelAdmin):
-    model = Edition
     fields = (
         "title",
         "language",
@@ -61,9 +86,10 @@ class EditionAdmin(admin.ModelAdmin):
     get_author.admin_order_field = "title__author"
 
 
-@admin.register(Prize)
-class PrizeAdmin(admin.ModelAdmin):
+@admin.register(Award)
+class AwardAdmin(admin.ModelAdmin):
     search_fields = ("name",)
+    inlines = [BookAwardInline]
 
 
 @admin.register(Genre)
@@ -109,17 +135,8 @@ class ReadingLogAdmin(admin.ModelAdmin):
 @admin.register(Series)
 class SeriesAdmin(admin.ModelAdmin):
     list_display = ("title", "author", "get_number_of_volumes")
-    list_fields = ("title", "author", "books_in_this_series")
-    readonly_fields = ["books_in_this_series"]
-
-    def books_in_this_series(self, obj):
-        number_of_volumes = obj.book_count
-        url = reverse("admin:books_book_changelist") + f"?series__id__exact={obj.id}"
-        return format_html(
-            '<a href="{}">View {} books in this series</a>', url, number_of_volumes
-        )
-
-    books_in_this_series.short_description = "Books in this series"
+    fields = ("title", "author")
+    inlines = [BookInlineForSeries]
 
     # Show the number of books in each series
     @admin.display(description="volumes")
