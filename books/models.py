@@ -1,3 +1,70 @@
 from django.db import models
 
-# Create your models here.
+
+class Author(models.Model):
+    name = models.CharField(max_length=50)
+    country = models.CharField(max_length=50)
+    nobel = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
+
+
+class Prize(models.Model):
+    name = models.CharField(max_length=50)
+    about = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
+class Genre(models.Model):
+    name = models.CharField(max_length=20)
+
+    def __str__(self):
+        return self.name
+
+
+class Book(models.Model):
+    name = models.CharField(max_length=50)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    prize = models.ManyToManyField(Prize, blank=True)
+    publish_year = models.IntegerField(null=True)
+    language = models.CharField(max_length=20, null=True)
+    genres = models.ManyToManyField(Genre, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Edition(models.Model):
+    # TODO this needs maybe the status here
+    FORMATS = {"P": "print", "D": "digital", "A": "audio"}
+    title = models.ForeignKey(Book, on_delete=models.CASCADE)
+    publish_year = models.IntegerField(null=True)
+    language = models.CharField(max_length=20, null=True)
+    format = models.CharField(max_length=1, choices=FORMATS)
+
+    def __str__(self):
+        return f"{self.title.name} - {self.format}"
+
+
+class Reading(models.Model):
+    STATUS = {"W": "want to read", "R": "currently reading", "F": "finished"}
+    edition = models.ForeignKey(Edition, on_delete=models.CASCADE)
+    date_started = models.DateField(null=True)
+    date_finished = models.DateField(null=True, blank=True)
+    current_status = models.CharField(choices=STATUS, max_length=1, default="W")
+
+    def __str__(self):
+        return f"{self.edition.title.name} - {self.edition.title.author.name}: {self.current_status}"
+
+
+class ReadingLog(models.Model):
+    reading = models.ForeignKey(Reading, on_delete=models.CASCADE, related_name="logs")
+    date = models.DateTimeField(auto_now_add=True)
+    pages_read = models.IntegerField(null=True, blank=True)
+    percentage_complete = models.FloatField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.reading.edition.title.name} - {self.pages_read} pages on {self.date}"
