@@ -1,4 +1,5 @@
 from django.db import models
+from django.forms import ValidationError
 
 
 class Author(models.Model):
@@ -25,6 +26,14 @@ class Genre(models.Model):
         return self.name
 
 
+class Series(models.Model):
+    title = models.CharField(max_length=30)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.title} by {self.author}"
+
+
 class Book(models.Model):
     name = models.CharField(max_length=50)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
@@ -32,6 +41,18 @@ class Book(models.Model):
     publish_year = models.IntegerField(null=True)
     language = models.CharField(max_length=20, null=True)
     genres = models.ManyToManyField(Genre, blank=True)
+    page_count = models.IntegerField(null=True)
+    series = models.ForeignKey(Series, on_delete=models.SET_NULL, null=True, blank=True)
+    series_order = models.FloatField(null=True, blank=True)
+
+    def clean(self):
+        """Ensure series_order is required when series is not null"""
+        if self.series and self.series_order is None:
+            raise ValidationError(
+                {
+                    "series_order": "series_order is required when the book is a part of a series!"
+                }
+            )
 
     def __str__(self):
         return self.name
@@ -44,9 +65,10 @@ class Edition(models.Model):
     publish_year = models.IntegerField(null=True)
     language = models.CharField(max_length=20, null=True)
     format = models.CharField(max_length=1, choices=FORMATS)
+    isbn = models.CharField(max_length=14, null=True)
 
     def __str__(self):
-        return f"{self.title.name} - {self.format}"
+        return f"{self.title.name} - {self.format_display()}"
 
 
 class Reading(models.Model):
@@ -68,3 +90,5 @@ class ReadingLog(models.Model):
 
     def __str__(self):
         return f"{self.reading.edition.title.name} - {self.pages_read} pages on {self.date}"
+    class Meta:
+        verbose_name_plural= "Reading Logs"
