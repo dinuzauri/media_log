@@ -18,6 +18,7 @@ from .models import (
 
 
 class BookAwardInline(admin.TabularInline):
+    #BUG this does not display the name of the book, needs re-work prize name is better
     model = BookAward
     extra = 0
     fields = ["year", "book", "status"]
