@@ -18,10 +18,9 @@ from .models import (
 
 
 class BookAwardInline(admin.TabularInline):
-    #BUG this does not display the name of the book, needs re-work prize name is better
     model = BookAward
     extra = 0
-    fields = ["year", "book", "status"]
+    fields = ["prize", "year", "book", "status"]
     ordering = ["-year"]
 
 
@@ -31,9 +30,10 @@ class BookInlineForSeries(admin.TabularInline):
     extra = 0
     ordering = ["series_order"]
 
+
 class BookInlineForAuthor(admin.TabularInline):
     model = Book
-    fields = ["name",  "publish_year", "series", "page_count"]
+    fields = ["name", "publish_year", "series", "page_count"]
     extra = 0
     ordering = ["-publish_year"]
 
@@ -67,7 +67,7 @@ class AuthorAdmin(admin.ModelAdmin):
     model = Author
     fields = ("name", "country", "nobel")
     list_display = ("name", "country", "nobel")
-    inlines=[BookInlineForAuthor]
+    inlines = [BookInlineForAuthor]
 
 
 @admin.register(Edition)
