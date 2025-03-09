@@ -37,6 +37,11 @@ class BookInlineForAuthor(admin.TabularInline):
     extra = 0
     ordering = ["-publish_year"]
 
+class ReadingInLine(admin.TabularInline):
+    model = Reading
+    extra = 0
+    fields = ["date_started", "date_finished", "current_status"]
+    ordering = ["-date_finished"]
 
 @admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
@@ -72,12 +77,9 @@ class AuthorAdmin(admin.ModelAdmin):
 
 @admin.register(Edition)
 class EditionAdmin(admin.ModelAdmin):
-    fields = (
-        "title",
-        "language",
-        "format",
-    )
-    list_display = ("title", "get_author", "language", "format")
+    fields = ("title", "language", "format", "publish_year", "isbn", "status")
+    list_display = ("title", "get_author", "language", "format", "status")
+    inlines = [ReadingInLine]
 
     @admin.display(description="Author")
     def get_author(self, obj):
