@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "books",
+    "read",
 ]
 
 MIDDLEWARE = [
@@ -118,7 +118,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 #TODO change the path to static and reconfigure deploy
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = BASE_DIR / "static"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
