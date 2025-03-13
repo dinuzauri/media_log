@@ -117,7 +117,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
-#TODO change the path to static and reconfigure deploy
 STATIC_ROOT = BASE_DIR / "static"
 
 # Default primary key field type
