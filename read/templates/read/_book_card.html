@@ -1,0 +1,23 @@
+<div class="card">
+  <header class="card-header">
+    <p class="card-header-title">{{ reading.edition.title.title }}</p>
+    <button class="card-header-icon" aria-label="more options"><span class="icon"><i class="fas fa-angle-down" aria-hidden="true"></i></span></button>
+  </header>
+  <div class="card-content p-2">
+    <div class="content">
+      <div class="progress-wrapper-{{reading.id}}" id="progress-wrapper-{{reading.id}}" style="position: relative; text-align: center;">
+        <progress  class="progress is-primary mb-1" value="{{ reading.percentage_complete }}" max="100"></progress>
+        <span class="progress-text" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -53%); font-weight: bold;">{{ reading.percentage_complete }}%</span>
+      </div>
+      <p class="mb-0">
+        <strong>Format:</strong> {{ reading.edition.get_format_display }}
+      </p>
+      <p class="mb-0">
+        <strong>Started:</strong> {{ reading.date_started }}
+      </p>
+    </div>
+  </div>
+  <div id="reading-{{ reading.id }}-footer">
+    {% include 'read/_book_card_footer.html' with reading=reading %}
+  </div>
+</div>

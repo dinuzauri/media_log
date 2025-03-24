@@ -1,0 +1,33 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}
+  Read
+{% endblock %}
+
+{% block content %}
+  <div class="box">
+    <p>Currently Reading</p>
+    <div class="columns is-multiline is-justify-content-center">
+      {% for reading in currently_reading %}
+        <div class="column is-3">
+          {% include 'read/_book_card.html' with reading=reading %}
+        </div>
+      {% empty %}
+        <p>Nothing being read.</p>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="box">Target till end of year</div>
+  <div class="box">
+    Streaks<div class="columns is-justify-content-center">
+      <div class="column is-three-quarters" id="cal-heatmap"></div>
+    </div>
+  </div>
+  <div class="box">Last Finished</div>
+  <div class="box">Top rated vs worst rated</div>
+  <div class="box">Other like wanted to read</div>
+  <div id="cal-heatmap"></div>
+{% endblock %}
+{% block scripts %}
+  <script type="module" src="{% static 'read/heatmap.js' %}"></script>
+{% endblock %}

@@ -100,7 +100,7 @@ class BookAward(models.Model):
 class Edition(models.Model):
     FORMATS = {"P": "print", "D": "digital", "A": "audio"}
     STATUSES = {"W": "want to read", "P": "in progress", "F": "finished"}
-    title = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="editions" )
+    title = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="editions")
     subtitle = models.CharField(null=True, blank=True, max_length=50)
     page_count = models.IntegerField(null=True, blank=True)
     publish_year = models.IntegerField(null=True, blank=True)
@@ -122,7 +122,9 @@ class Edition(models.Model):
 
 class Reading(models.Model):
     STATUS = {"R": "currently reading", "F": "finished"}
-    edition = models.ForeignKey(Edition, on_delete=models.CASCADE, related_name="readings" )
+    edition = models.ForeignKey(
+        Edition, on_delete=models.CASCADE, related_name="readings"
+    )
     date_started = models.DateField(null=True, blank=True)
     date_finished = models.DateField(null=True, blank=True)
     current_status = models.CharField(choices=STATUS, max_length=1, default="R")

@@ -1,0 +1,39 @@
+<footer>
+  <form
+    method="post"
+    hx-post="{% url 'read:add_reading_log' reading.id %}"
+    hx-trigger="submit"
+    hx-target="#progress-wrapper-{{ reading.id }}"
+    hx-swap="innerHTML"
+  >
+    {% csrf_token %}
+    <div class="field has-addons">
+      <div class="control">
+        <div class="select is-primary">
+          <select
+            name="log_type"
+            id="log_type_{{ reading.id }}"
+            class="select"
+            hx-get="{% url 'read:add_reading_log' reading.id %}"
+            hx-trigger="load"
+            hx-target="#log_type_{{ reading.id }}"
+            hx-swap="innerHTML"
+          ></select>
+        </div>
+      </div>
+      <div class="control">
+        <input
+          class="input is-primary"
+          type="number"
+          name="value"
+          id="log-value"
+          min="1"
+          required
+        />
+      </div>
+      <div class="control">
+        <button class="button is-primary" type="submit">OK</button>
+      </div>
+    </div>
+  </form>
+</footer>
