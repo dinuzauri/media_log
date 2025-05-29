@@ -153,9 +153,71 @@ class ReadingLog(models.Model):
     date = models.DateTimeField(default=timezone.now)
     pages_read = models.IntegerField(null=True, blank=True)
     percentage_read = models.IntegerField(null=True, blank=True)
+    resolved_page_count = models.IntegerField(editable=False)
+    computed_pages = models.IntegerField(editable=False)
+    page_difference = models.IntegerField(default=0)
+
+    def clean(self):
+        if self.pages_read is None and self.percentage_read is None:
+            raise ValidationError("Either pages or percentage must be provided")
+        if self.pages_read is not None and self.percentage_read is not None:
+            raise ValidationError("Cannot provide both pages and percentage")
+
+    def save(self, *args, **kwargs):
+        # Set the number of pages of the read
+        edition = self.reading.edition
+        self.resolved_page_count = edition.page_count or edition.title.page_count
+
+        # Calculate the number of pages read
+        if self.pages_read is not None:
+            self.computed_pages = self.pages_read
+        else:
+            self.computed_pages = round(
+                (self.percentage_read / 100) * self.resolved_page_count
+            )
+        # find previous log in the same reading
+        previous_log = (
+            ReadingLog.objects.filter(reading=self.reading)
+            .exclude(pk=self.pk)
+            .filter(date__lte=self.date)
+            .order_by("-date")
+            .first()
+        )
+        if previous_log:
+            self.page_difference = max(
+                0, self.computed_pages - previous_log.computed_pages
+            )
+        else:
+            self.page_difference = max(0, self.computed_pages)
+        super().save(*args, **kwargs)
+
+    def update_subsequent_logs(self):
+        # Update all subsequent logs in the same reading
+        subsequent_logs = (
+            ReadingLog.objects.filter(reading=self.reading)
+            .filter(date__gt=self.date)
+            .order_by("date")
+        )
+        current_pages = self.computed_pages
+        for log in subsequent_logs:
+            new_diff = max(log.computed_pages - current_pages)
+            if log.page_difference != new_diff:
+                log.page_difference = new_diff
+                log.save(update_fields=["page_difference"])
+            current_pages = log.computed_pages
 
     def __str__(self):
         return f"{self.reading.edition.title.title} - {self.pages_read} pages on {self.date}"
 
     class Meta:
         verbose_name_plural = "Reading Logs"
+        indexes = [
+            models.Index(
+                fields=[
+                    "reading",
+                    "date",
+                ]
+            ),
+            models.Index(fields=["date"]),
+        ]
+        ordering = ["date"]

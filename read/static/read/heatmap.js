@@ -1,69 +1,115 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // console.log("Starting Heatmap");
+  let cal = new CalHeatmap();
+  let currentStartDate = new Date();
+  let currentMonthsToShow = 14; // Default value
 
-  const cal = new CalHeatmap();
-  const data = [
-    { date: "2025-02-01", value: 10 },
-    { date: "2025-03-20", value: 10 },
-    { date: "2025-03-21", value: 15 },
-    { date: "2025-03-22", value: 20 },
-    { date: "2025-03-23", value: 5 },
-    { date: "2025-03-24", value: 30 },
-    { date: "2025-03-25", value: 30 },
-    { date: "2025-03-26", value: 100 },
-    { date: "2025-03-27", value: 59 },
-  ];
-  const startDate= new Date();
-  startDate.setFullYear(startDate.getFullYear()-1);
-  // console.log(startDate)
+  // Initial render
+  renderHeatmap();
 
-  const options = {
-    data: {
-      source: data,
-      type: "json",
-      x: "date",
-      y: "value",
-    },
-    date: {
-      start: startDate
-    },
-    range: 13, // Show one year (12 months)
-    scale: {
-      color: {
-        type: "threshold",
-        range: ["#14432a", "#166b34", "#37a446", "#4dd05a"], // Adjust the colors
-        domain: [10, 20, 30],
+  // Navigation controls
+  document.getElementById("prev-btn").addEventListener("click", function () {
+    cal.previous();
+  });
+
+  document.getElementById("next-btn").addEventListener("click", function () {
+    cal.next();
+  });
+
+  document.getElementById("today-btn").addEventListener("click", function () {
+    currentStartDate = new Date();
+    cal.destroy();
+    renderHeatmap();
+  });
+
+  // Responsive handling with debounce
+  let resizeTimer;
+  window.addEventListener("resize", function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () {
+      cal.destroy();
+      renderHeatmap();
+    }, 100);
+  });
+
+  function calculateMonthsToShow() {
+    const screenWidth = window.innerWidth;
+    if (screenWidth < 768) {
+      return 6; // Show 6 months on mobile
+    } else if (screenWidth < 1024) {
+      return 9; // Show 9 months on tablet
+    }
+    return 14; // Default to 14 months on desktop
+  }
+
+  async function renderHeatmap() {
+    // debugger;
+    const container = document.getElementById("heatmap-container");
+    const response = await fetch(container.dataset.heatmapUrl);
+    let data = await response.json();
+    console.log(data);
+
+    currentMonthsToShow = calculateMonthsToShow();
+    const startDate = new Date(currentStartDate);
+    startDate.setMonth(startDate.getMonth() - currentMonthsToShow + 1);
+
+    // data = [
+    //   { date: "2025-03-30", value: 3 },
+    //   { date: "2025-03-29", value: 6 },
+    // ];
+
+    const options = {
+      data: {
+        source: data,
+        type: "json",
+        x: "date",
+        y: "value",
       },
-    },
-    domain: {
-      type: "month",
-      gutter: 4,
-      label: { text: "MMM", textAlign: "start", position: "top" },
-    },
-    subDomain: {
-      type: "ghDay", // GitHub-like day blocks
-      radius: 2,
-      width: 11,
-      height: 11,
-      gutter: 4,
-    },
-    itemSelector: "#cal-heatmap", // Selects where to render the heatmap
-  };
-
-  const plugIns=[
-    [
-      Tooltip,
-      {
-        text: function (date, value, dayjsDate) {
-          return (
-            (value ? value + '°C' : 'No data') + ' on ' + dayjsDate.format('LL')
-          );
+      date: {
+        start: startDate,
+      },
+      range: currentMonthsToShow,
+      scale: {
+        color: {
+          type: "threshold",
+          range: ["#14432a", "#166b34", "#37a446", "#4dd05a"],
+          domain: [10, 20, 30],
         },
       },
-    ]];
+      domain: {
+        type: "month",
+        gutter: 4,
+        label: {
+          text: "MMM",
+          textAlign: "start",
+          position: "top",
+          offset: { x: 10, y: 5 },
+        },
+      },
+      subDomain: {
+        type: "ghDay",
+        radius: 2,
+        width: 11,
+        height: 11,
+        gutter: 4,
+      },
+      itemSelector: "#cal-heatmap",
+    };
 
-  // console.log(options);
-  cal.paint(options, plugIns);
+    const plugIns = [
+      [
+        Tooltip,
+        {
+          text: function (date, value, dayjsDate) {
+            return (
+              (value ? value + "°C" : "No data") +
+              " on " +
+              dayjsDate.format("LL")
+            );
+          },
+        },
+      ],
+    ];
 
-  // console.log("Heatmap should now be painted");
+    cal.paint(options, plugIns);
+  }
 });

@@ -1,7 +1,8 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
-from django.template.loader import render_to_string
+from django.db.models.functions import TruncDate
 from django.views import View
+from django.db.models import Sum
 
 from read.models import Reading, ReadingLog
 
@@ -10,8 +11,29 @@ from read.models import Reading, ReadingLog
 def MainReadView(request):
     currently_reading: Reading = Reading.objects.filter(current_status="R")
     return render(
-        request, "read/main_read_page.html", {"currently_reading": currently_reading}
+        request,
+        "read/main_read_page.html",
+        {
+            "currently_reading": currently_reading,
+        },
     )
+
+
+def daily_logs(request):
+    """Provides JSON data for the heatmap"""
+    daily_totals = (
+        ReadingLog.objects.filter(page_difference__gt=0)
+        .annotate(date_trunc=TruncDate("date"))
+        .values("date_trunc")
+        .annotate(total=Sum("page_difference"))
+        .order_by("date_trunc")
+    )
+
+    data = [
+        {"date": entry["date_trunc"].isoformat(), "value": entry["total"]}
+        for entry in daily_totals
+    ]
+    return JsonResponse(data, safe=False)
 
 
 class AddReadingLogView(View):

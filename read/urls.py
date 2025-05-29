@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import MainReadView, AddReadingLogView
+from .views import MainReadView, AddReadingLogView, daily_logs
 
 app_name = "read"
 urlpatterns = [
@@ -10,4 +10,5 @@ urlpatterns = [
         AddReadingLogView.as_view(),
         name="add_reading_log",
     ),
+    path("api/read/daily-logs/", daily_logs,name="daily-logs")
 ]

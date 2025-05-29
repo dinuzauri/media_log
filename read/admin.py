@@ -216,7 +216,20 @@ class ReadingAdmin(admin.ModelAdmin):
 @admin.register(ReadingLog)
 class ReadingLogAdmin(admin.ModelAdmin):
     list_display = ("reading", "date", "pages_read", "percentage_read")
-    fields = ("reading", "date", "pages_read", "percentage_read")
+    fields = (
+        "reading",
+        "date",
+        "pages_read",
+        "percentage_read",
+        "resolved_page_count",
+        "computed_pages",
+        "page_difference",
+    )
+    readonly_fields = (
+        "resolved_page_count",
+        "computed_pages",
+        "page_difference",
+    )
     list_filter = ("date",)
     autocomplete_fields = ("reading",)
 
