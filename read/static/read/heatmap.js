@@ -42,7 +42,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   async function renderHeatmap() {
-    // debugger;
     const container = document.getElementById("heatmap-container");
     const response = await fetch(container.dataset.heatmapUrl);
     let data = await response.json();
@@ -51,11 +50,6 @@ document.addEventListener("DOMContentLoaded", function () {
     currentMonthsToShow = calculateMonthsToShow();
     const startDate = new Date(currentStartDate);
     startDate.setMonth(startDate.getMonth() - currentMonthsToShow + 1);
-
-    // data = [
-    //   { date: "2025-03-30", value: 3 },
-    //   { date: "2025-03-29", value: 6 },
-    // ];
 
     const options = {
       data: {
@@ -101,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
         {
           text: function (date, value, dayjsDate) {
             return (
-              (value ? value + "°C" : "No data") +
+              (value ? value + " pages" : "No data") +
               " on " +
               dayjsDate.format("LL")
             );
