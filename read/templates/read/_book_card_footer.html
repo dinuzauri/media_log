@@ -1,5 +1,6 @@
-<footer>
-    <form method="post"
+<footer class="card-footer">
+    <form class="card-footer-item"
+          method="post"
           hx-post="{% url 'read:add_reading_log' reading.id %}"
           hx-trigger="submit"
           hx-target="#progress-wrapper-{{ reading.id }}"
